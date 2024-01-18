@@ -67,9 +67,9 @@ void Interrupt(void *parameter) {
       dnsServer.setTTL(3600);
       dnsServer.start(DNS_PORT, "*", localIP);
       server.on("/process", HTTP_POST, handleProcess);
-      Serial.println("HTTP server started 3");
+      // Serial.println("HTTP server started 3");
       server.on("/update", HTTP_GET, handleFirmwareUpdate);
-      Serial.println("HTTP server started 4");
+      // Serial.println("HTTP server started 4");
       server.on("/wpad.dat", []() {
         server.send(404);
       });
@@ -77,7 +77,7 @@ void Interrupt(void *parameter) {
       server.on("/update", HTTP_POST, []() {
         server.sendHeader("Connection", "close");
         server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
-        Serial.println("HTTP server started 5");
+        // Serial.println("HTTP server started 5");
         ESP.restart();
       });
       server.onNotFound([html]() {
