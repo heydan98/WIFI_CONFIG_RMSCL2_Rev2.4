@@ -153,6 +153,13 @@ const char htmlContent[] PROGMEM = R"=====(
       }
     </style>
     <script>
+      
+      function formatValue(inputField) {
+        const inputValue = inputField.value;
+
+        // Insert a space after every two characters, except at the beginning
+        inputField.value = inputValue.replace(/(\d{2})(?=\d)/g, '$1 ');
+      }
       function toggleMode() {
         var modeSelect = document.getElementById("modeSelect");
         var wifiSettings = document.querySelectorAll(".hidden#wifiSettings");
@@ -250,25 +257,26 @@ const char htmlContent[] PROGMEM = R"=====(
       }
 
       function toggleClassLora() {
-        var classSelect = document.getElementById("classSelect");
-        var abpSettings = document.querySelectorAll(".hidden#abpSettings");
+        var classSelectOTAA = document.getElementById("classSelectOTAA");
+        var classSelectABP = document.getElementById("classSelectABP");
+        var abpClassSettings = document.querySelectorAll(".hidden#abpSettings");
         var classSettings = document.querySelectorAll(".hidden#otaaSettings");
 
-        if (classSelect.value === "A" || classSelect.value === "C") {
-          abpSettings.forEach((element) => {
-            element.style.display = "none";
-          });
-          classSettings.forEach((element) => {
-            element.style.display = "table-row";
-          });
-        } else {
-          abpSettings.forEach((element) => {
-            element.style.display = "table-row";
-          });
-          classSettings.forEach((element) => {
-            element.style.display = "none";
-          });
-        }
+        // if (classSelect.value === "A" || classSelect.value === "C") {
+        //   abpClassSettings.forEach((element) => {
+        //     element.style.display = "none";
+        //   });
+        //   classSettings.forEach((element) => {
+        //     element.style.display = "table-row";
+        //   });
+        // } else {
+        //   abpClassSettings.forEach((element) => {
+        //     element.style.display = "table-row";
+        //   });
+        //   classSettings.forEach((element) => {
+        //     element.style.display = "none";
+        //   });
+        // }
       }
       function checkmodeSelect() {
         var modeSelect = document.getElementById("modeSelect").value;
@@ -302,24 +310,21 @@ const char htmlContent[] PROGMEM = R"=====(
       }
 
       function checkclassLoraSelect() {
-        var classSelect = document.getElementById("classSelect").value;
+        var classSelectOTAA = document.getElementById("classSelectOTAA").value;
+        var classSelectABP = document.getElementById("classSelectABP").value;
 
-        if (classSelect === "A") {
-          document.getElementById("classSelect").setAttribute("data-type", "A");
+        if (classSelectOTAA === "A") {
+          document.getElementById("classSelectOTAA").setAttribute("data-type", "A");
         } else {
-          document.getElementById("classSelect").setAttribute("data-type", "C");
+          document.getElementById("classSelectOTAA").setAttribute("data-type", "C");
+        }
+        
+        if (classSelectABP === "A") {
+          document.getElementById("classSelectABP").setAttribute("data-type", "A");
+        } else {
+          document.getElementById("classSelectABP").setAttribute("data-type", "C");
         }
       }
-
-      // function checkTypeSensorSelect() {
-      //   var classSelect = document.getElementById("classSelect").value;
-
-      //   if (classSelect === "A") {
-      //     document.getElementById("classSelect").setAttribute("data-type", "A");
-      //   } else {
-      //     document.getElementById("classSelect").setAttribute("data-type", "C");
-      //   }
-      // }
 
       function toggleRS485Settings() {
         var rs485Options = document.getElementById("rs485Options").value;
@@ -550,6 +555,9 @@ const char htmlContent[] PROGMEM = R"=====(
         var value20 = document.getElementById("value20").value;
         var value22 = document.getElementById("value22").value;
         var value23 = document.getElementById("value23").value;
+        // var value24 = document.getElementById("value24").value;
+        // var value25 = document.getElementById("value25").value;
+
 
 
         var dataType1 = document.getElementById("dataType1").value;
@@ -608,7 +616,8 @@ const char htmlContent[] PROGMEM = R"=====(
 
 
         var modeLoraSelect = document.getElementById("modeLoraSelect").value;
-        var classSelect = document.getElementById("classSelect").value;
+        var classSelectOTAA = document.getElementById("classSelectOTAA").value;
+        var classSelectABP = document.getElementById("classSelectABP").value;
         var rs485Options = document.getElementById("rs485Options").value;
         
         var xhr = new XMLHttpRequest();
@@ -660,9 +669,11 @@ const char htmlContent[] PROGMEM = R"=====(
             "&value18=" + encodeURIComponent(value18) +
             "&value19=" + encodeURIComponent(value19) +
             "&value20=" + encodeURIComponent(value20) +
-            // "&value21=" + encodeURIComponent(value21) +
             "&value22=" + encodeURIComponent(value22) +
             "&value23=" + encodeURIComponent(value23) +
+            // "&value24=" + encodeURIComponent(value24) +
+            // "&value25=" + encodeURIComponent(value25) +
+
 
             "&tempInput=" + encodeURIComponent(tempInput) +
             "&humInput=" + encodeURIComponent(humInput) +
@@ -673,7 +684,8 @@ const char htmlContent[] PROGMEM = R"=====(
             "&value21=" + encodeURIComponent(value21) +
             "&modeSelect=" + encodeURIComponent(modeSelect) +
             "&modeLoraSelect=" + encodeURIComponent(modeLoraSelect) +
-            "&classSelect=" + encodeURIComponent(classSelect) +
+            "&classSelectOTAA=" + encodeURIComponent(classSelectOTAA) +
+            "&classSelectABP=" + encodeURIComponent(classSelectABP) +
             "&rs485Options=" + encodeURIComponent(rs485Options) +
             "&dataType1=" + encodeURIComponent(dataType1) +
             "&dataType2=" + encodeURIComponent(dataType2) +
@@ -749,8 +761,8 @@ const char htmlContent[] PROGMEM = R"=====(
                   <select id="modeSelect" onchange="toggleMode()">
                     <option value="">-- Select Mode --</option>
                     <option value="WIFI">WIFI</option>
-                    <option value="SIM4G">SIM4G</option>
-                    <option value="LORAWAN">LORAWAN</option>
+                    <option value="SIM4G">4G</option>
+                    <option value="LORAWAN">LoRaWAN</option>
                   </select>
                 </td>
               </tr>
@@ -763,8 +775,16 @@ const char htmlContent[] PROGMEM = R"=====(
                 <th>PASSWORD</th>
                 <td><input id="value23" type="text" /></td>
               </tr>
+              <!-- <tr class="hidden" id="sim4GSettings">
+                <th>Send index</th>
+                <td><input id="value24" type="text" /></td>
+              </tr>
+              <tr class="hidden" id="sim4GSettings">
+                <th>Send value</th>
+                <td><input id="value25" type="text" /></td>
+              </tr> -->
               <tr class="hidden" id="lorawanSettings">
-                <th>ModeLoraWan</th>
+                <th>Mode LoRaWAN</th>
                 <td>
                   <select id="modeLoraSelect" onchange="toggleModeLora()">
                     <option value="">-- Select Mode --</option>
@@ -773,59 +793,60 @@ const char htmlContent[] PROGMEM = R"=====(
                   </select>
                 </td>
               </tr>
-              <!-- Ẩn bảng thông số chế độ OTAA ban đầu -->
-              <tr class="hidden" id="otaaSettings"> <th>Class</th>
+            <!-- Ẩn bảng thông số chế độ OTAA ban đầu -->
+            <tr class="hidden" id="otaaSettings"> 
+                <th>Class</th>
                 <td>
-                    <select id="classSelect" onchange="toggleClassLora()">
+                    <select id="classSelectOTAA" onchange="toggleClassLora()">
                         <option value="">-- Select Class --</option>
                         <option value="A">A</option>
                         <option value="C">C</option>
                     </select>
                 </td>
-              </tr>
-              <tr class="hidden" id="otaaSettings">
+            </tr>
+            <tr class="hidden" id="otaaSettings">
                 <th>Dev_EUI</th>
                 <td><input id="value1" type="text" /></td>
-              </tr>
-              <tr class="hidden" id="otaaSettings">
+            </tr>
+            <tr class="hidden" id="otaaSettings">
                 <th>APP_EUI</th>
                 <td><input id="value2" type="text" /></td>
-              </tr>
-              <tr class="hidden" id="otaaSettings">
+            </tr>
+            <tr class="hidden" id="otaaSettings">
                 <th>APP KEY</th>
                 <td><input id="value3" type="text" /></td>
-              </tr>
-              <tr class="hidden" id="otaaSettings">
+            </tr>
+            <tr class="hidden" id="otaaSettings">
                 <th>Interval</th>
                 <td><input id="value4" type="text" /></td>
-              </tr>
-              <!-- Hiển thị bảng thông số chế độ ABP ban đầu -->
-              <tr class="hidden" id="abpSettings">
+            </tr>
+            <!-- Hiển thị bảng thông số chế độ ABP ban đầu -->
+            <tr class="hidden" id="abpSettings">
                 <th>Class</th>
                 <td>
-                  <select id="classSelect" onchange="toggleClassLora()">
-                    <option value="">-- Select Class --</option>
-                    <option value="A">A</option>
-                    <option value="C">C</option>
-                  </select>
+                    <select id="classSelectABP" onchange="toggleClassLora()">
+                        <option value="">-- Select Class --</option>
+                        <option value="A">A</option>
+                        <option value="C">C</option>
+                    </select>
                 </td>
-              </tr>
-              <tr class="hidden" id="abpSettings">
+            </tr>
+            <tr class="hidden" id="abpSettings">
                 <th>Dev_addr</th>
                 <td><input id="value5" type="text" /></td>
-              </tr>
-              <tr class="hidden" id="abpSettings">
+            </tr>
+            <tr class="hidden" id="abpSettings">
                 <th>NWK</th>
                 <td><input id="value6" type="text" /></td>
-              </tr>
-              <tr class="hidden" id="abpSettings">
+            </tr>
+            <tr class="hidden" id="abpSettings">
                 <th>APPs KEY</th>
                 <td><input id="value7" type="text" /></td>
-              </tr>
-              <tr class="hidden" id="abpSettings">
+            </tr>
+            <tr class="hidden" id="abpSettings">
                 <th>Interval</th>
                 <td><input id="value8" type="text" /></td>
-              </tr>
+            </tr>
             </table>
           </div>
         </div>
@@ -849,45 +870,46 @@ const char htmlContent[] PROGMEM = R"=====(
                   </select>
                 </td>
               </tr>
-              <tr class="hidden-row tempHumSettings">
-                <td>BaudRates</td>
-                <td>RS485</td>
-                <td>4800</td>
+              <tr class="hidden-row tempHumSettings" >
+                <td><b>BaudRates</b></td>
+                <!-- <td>RS485</td> -->
+                <td>9600</td>
               </tr>
-              <tr class="hidden-row tempHumSettings">
-                <td>ByteSend</td>
-                <td>RS485</td>
-                <td>010300000002</td>
+              <tr class="hidden-row tempHumSettings" >
+                <td><b>ByteSend</b></td>
+                <!-- <td>RS485</td> -->
+                <td>01 03 00 00 00 02</td>
               </tr>
-              <tr class="hidden-row tempHumSettings">
-                <td>RS485 Configure</td>
-                <td>RS485</td>
+              <tr class="hidden-row tempHumSettings" >
+                <td><b>RS485 Configure</b></td>
+                <!-- <td>RS485</td> -->
                 <td>8N1</td>
               </tr>
-              <tr class="hidden-row phSettings">
-                <td>BaudRates</td>
-                <td>RS485</td>
-                <td>4800</td>
+              <tr class="hidden-row phSettings" >
+                <td><b>BaudRates</b></td>
+                <!-- <td>RS485</td> -->
+                <td>9600</td>
               </tr>
-              <tr class="hidden-row phSettings">
-                <td>ByteSend</td>
-                <td>RS485</td>
-                <td>010300000002</td>
+              <tr class="hidden-row phSettings" >
+                <td><b>ByteSend</b></td>
+                <!-- <td>RS485</td> -->
+                <td>01 03 00 00 00 02</td>
               </tr>
-              <tr class="hidden-row phSettings">
-                <td>RS485 Configure</td>
-                <td>RS485</td>
+              <tr class="hidden-row phSettings" >
+                <td><b>RS485 Configure</b></td>
+                <!-- <td>RS485</td> -->
                 <td>8N1</td>
               </tr>
-              <tr class="hidden-row customSettings">
+              <tr class="hidden-row customSettings" style="font-weight: bold;">
                 <td>BaudRates</td>
                 <td><input id="value9" type="text" /></td>
               </tr>
-              <tr class="hidden-row customSettings">
+              <tr class="hidden-row customSettings" style="font-weight: bold;">
                 <td>ByteSend</td>
-                <td><input id="value10" type="text" /></td>
+                <td><input id="value10" type="text" oninput="formatValue(this)" /></td>
               </tr>
-              <tr class="hidden-row customSettings">
+              
+              <tr class="hidden-row customSettings" style="font-weight: bold;">
                 <td>RS485 Configure</td>
                 <td><input id="value11" type="text" /></td>
               </tr>
@@ -1017,8 +1039,8 @@ const char htmlContent[] PROGMEM = R"=====(
                     </select>
                   </td>
                   <td class="data-inputs analog-inputs">
-                    <input type="text" id="value29" class="input-small" /> -
-                    <input type="text" id="value30" class="input-small" />
+                    <input type="text" id="value32" class="input-small" /> -
+                    <input type="text" id="value33" class="input-small" />
                   </td>
                   <td class="data-inputs digital-inputs">
                     <input type="text" id="value15" />
@@ -1103,7 +1125,6 @@ const char htmlContent[] PROGMEM = R"=====(
           </div>
         </div>
       </div>
-
       <div class="button">
         <button type="button" onclick="toggleDataRows()">+</button>
         <button type="button" onclick="sendValues()">Send</button>
@@ -1120,4 +1141,3 @@ const char htmlContent[] PROGMEM = R"=====(
   </body>
 </html>
 )=====";
-       

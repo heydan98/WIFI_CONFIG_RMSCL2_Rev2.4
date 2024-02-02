@@ -5,6 +5,7 @@ void buttonInterrupt()
   }
   lastDebounceTime = millis();
   sendLoraData = false;
+  send4Gdata = false;
   Serial.println(digitalRead(buttonPin));
   Serial.println("Interrupt");
   webServerEnabled = true;

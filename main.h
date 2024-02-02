@@ -14,6 +14,12 @@ Ticker timer;
 Ticker timer1;
 Crc16 crc;
 
+/**
+ * @brief The DNSServer class provides a simple DNS server implementation for ESP32.
+ * 
+ * It allows the ESP32 to act as a DNS server, responding to DNS queries from clients on the network.
+ * The DNSServer class can be used to redirect DNS queries to a specific IP address or to handle custom DNS responses.
+ */
 DNSServer dnsServer;
 WebServer server(80);
 
@@ -25,6 +31,9 @@ WebServer server(80);
 //   // .DIO2 = 19,
 //   // .DIO5 = 21,
 // };
+/**
+ * @brief Structure representing the pin configuration for RFM module.
+ */
 const sRFM_pins RFM_pins {
   .CS = 15,
   .RST = 33,
@@ -34,9 +43,12 @@ const sRFM_pins RFM_pins {
   .DIO5 = 23,
 };
 String modeSelect = "";
-String Class = "";
+String ClassOTAA = "";
+String ClassABP = "";
 String RS485_OPTIONS = "";
 String modeLoraSelect = "";
+String index4G = "";
+String value4G = "";
 // 632a72b0220ea2a6
 // 807086fb30340faec2680654dfb3887d
 
@@ -94,14 +106,10 @@ byte recvStatus = 0;
 int count_RS485 = 0;
 int RS485_count = 0;
 /* Declare RS485. */
-
+int Temp4G;
+int Hum4G;
 #define RXD1 26//RS485
 #define TXD1 27
-#define RXD2 16//SIM4G
-#define TXD2 17
-// #define RXD3 26//RS232
-// #define TXD3 25
-
 
 #define RS485_PIN_DIR 25
 #define RS485Transmit    HIGH
@@ -117,7 +125,7 @@ int Hum, Temp;
 float temperature_float = 0, humidity_float = 0;
 
 /***************************** RS232 *****************************/
-HardwareSerial RS232(3);
+HardwareSerial RS232(2);
 #define SP 5
 #define SS 3
 #define RS 9
@@ -143,7 +151,7 @@ byte hex_carrier[] = {0x00, 0x00, 0x00, 0x00};
 int number_count = 0;
 const int daikin  = 1;
 const int carrier = 2;
-
+/***************************** *****************************/
 String Data_Lorawan;
 
 unsigned long lastDebounceTime = 0;
@@ -161,6 +169,8 @@ bool dataSent = false;
 bool rs485Enabled = true;
 boolean State ;
 bool sendLoraData = false; 
+bool send4Gdata = false;
+bool sendWifidata = false;
 #define PIN_ANALOG 34
 // #define PIN_SPICS 5
 // #define PIN_ITR 26
@@ -171,38 +181,65 @@ String receive_AT;
 String response = "";
 bool isModuleSIM = false;
 bool DEBUG = true;
-#define PIN_PWRKEY 27
-
-
-
+#define PIN_PWRKEY 19
+#define RXD2 16//SIM4G
+#define TXD2 17
+char data_mqtt[30];
+int count = 0;
+String data_wifi;
+String data_4G;
+const char *mqttServer = "demo.thingsboard.io";
+const int mqttPort = 1883;
+const char *mqttClientId = "763452";
+const char *mqttUsername = "09090808";
+const char *mqttPassword = "09090808";
 /***************************** Setup Variable and Pin *****************************/
 /* Time variable. */
 unsigned long Millis = 0;
 unsigned long previousMillis_data = 0;
-unsigned long interval_data; 
+unsigned long interval_data = 120000;
 unsigned long previous_time = 0;
 unsigned long previous_time_sensor = 0;
 unsigned long previous_led = 0;
-unsigned int counter = 0;    
+unsigned int counter = 0;     // message counter
 unsigned int timer_previous = 0;
+/*Setting GPIO*/
+#define PIN_LED 18
+#define LED_ON() digitalWrite(PIN_LED, HIGH)
+#define LED_OFF() digitalWrite(PIN_LED, LOW)
+/*Setting EEPROM*/
+int lastButtonState = 0;
+int buttonCounter = 0;
+long timeButton = 0;
+bool battery_state = false;
 
 bool lora_connect = true;
+// boolean lora_state = false;
+// boolean rs485_state = true;
+// boolean rs232_state = true;
+
+// bool interruptMode = false;
+// int previousButtonState = 0;
+// unsigned long buttonPressStartTime = 0;
+
+/***************************** LED 7 Segment *****************************/
+/*Setting pin LED7Segment*/
+int led_number = 0;
+String led_string[] = {"SP--", "---C", "RS--", "---C", "SS--", "---C", "USDA", "---C", "HU--", "---H"};
+byte hex[] = {0x00, 0x00, 0x00, 0x00};
+int count_led = 0, dot;
+String chain = "----";
+#define LATCH_PIN 21 // ST_CP
+#define CLOCK_PIN 22 // SH_CP
+#define DATA_PIN 19  //DS
+/*Setting variable LED7Segment*/
+byte ledSegments[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F}; //K common
+byte pos[] = {0x0E, 0x0D, 0x0B, 0x07};
+byte pos_led[] =  {0x0E, 0x0D, 0x0B, 0x07};
+int arr[] = {0, 0, 0, 0};
 boolean lora_state = false;
 boolean rs485_state = true;
 boolean rs232_state = true;
 /***************************** Deepsleep Mode *****************************/
 #define uS_TO_S_FACTOR 1000000
 #define TIME_TO_SLEEP 120
-
-bool interruptMode = false;
-int previousButtonState = 0;
-unsigned long buttonPressStartTime = 0;
-
-// int buttonState = 0;
-// const char MQTTpublish[] = "v1/devices/me/telemetry";
-// String receive_AT;
-char data_mqtt[30];
-int count = 0;
-// String response = "";
-// bool isModuleSIM = false;
-// bool DEBUG = true;

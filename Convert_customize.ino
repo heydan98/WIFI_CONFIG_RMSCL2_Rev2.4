@@ -1,12 +1,12 @@
 void Convert_RS485() {
-  BaudRates_Customize = readFromEEPROM(190);
+  BaudRates_Customize = readFromEEPROM(150);
   if (BaudRates_Customize.length() > 0) {
     BaudRates = BaudRates_Customize.toInt();
   } else {
     BaudRates = 300;
   }
 
-  ByteSend_Customize = readFromEEPROM(200);
+  ByteSend_Customize = readFromEEPROM(158);
   if (ByteSend_Customize.length() > 0) {
     byteSend_RS485[6] = ByteSend_Customize.toInt();
   } else {

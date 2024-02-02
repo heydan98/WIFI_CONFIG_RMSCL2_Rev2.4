@@ -9,7 +9,7 @@ void setup_lora()
 
   if (modeLoraSelect == "OTAA")
   {
-    if (Class == "A" )
+    if (ClassOTAA == "A" )
     {
       lora.setDeviceClass(CLASS_A);
     } else
@@ -34,7 +34,7 @@ void setup_lora()
     } while (!isJoined && !start_init);
 
   } else if (modeLoraSelect == "ABP") {
-    if (Class == "A" )
+    if (ClassABP == "A" )
     {
       lora.setDeviceClass(CLASS_A);
     } else
@@ -71,10 +71,10 @@ void setup_lora()
       Serial.print(TempInput); Serial.println(float(Temp / 10), 2);
       Serial.print(HumInput); Serial.println(float(Hum / 10), 2);
     } else {
-      String Input1 = readFromEEPROM(420).substring(0, readFromEEPROM(420).indexOf(','));
-      String Input2 = readFromEEPROM(420).substring(0, readFromEEPROM(420).indexOf(',')+ 1);
-      String Input3 = readFromEEPROM(440).substring(0, readFromEEPROM(440).indexOf(','));
-      String Input4 = readFromEEPROM(440).substring(readFromEEPROM(440).indexOf(',') + 1);
+      String Input1 = readFromEEPROM(378).substring(0, readFromEEPROM(378).indexOf(','));
+      String Input2 = readFromEEPROM(378).substring(0, readFromEEPROM(378).indexOf(',')+ 1);
+      String Input3 = readFromEEPROM(398).substring(0, readFromEEPROM(398).indexOf(','));
+      String Input4 = readFromEEPROM(398).substring(readFromEEPROM(398).indexOf(',') + 1);
 
       int index_customInput1 = Input1.toInt();
       int index_customInput2 = Input2.toInt();
@@ -87,6 +87,194 @@ void setup_lora()
       Serial.print(customInput1); Serial.println(float(Hum / 10), 2);
     }
   }
+}
+void uplink_wifi()
+{
+  int health = 99;
+  boolean state = true;
+  String temp_str, hum_str;
+  if (Temp == 0)
+  {
+    temp_str = "***";
+    hum_str = "***";
+  }
+  else
+  {
+    temp_str = String(temperature_float, 1);
+    hum_str = String(humidity_float, 1);
+  }
+  data_wifi = "";
+  bool hasData = false;
+  for (int i = 0; i < 15; i++)
+  {
+    int address = 198 + i * 30;
+    String key = readFromEEPROM(address);
+
+    if (key.length() > 0)
+    {
+      String dataType = readFromEEPROM(address + 10);
+      String dataValue = readFromEEPROM(address + 20);
+
+      if (dataType == "Digital" || dataType == "Analog" || dataType == "Customize")
+      {
+        String value = "";
+        if (dataType == "Digital")
+        {
+          int pinNumber = readFromEEPROM(address + 20).toInt();
+          pinMode(pinNumber, INPUT);
+          int pinState = digitalRead(pinNumber);
+          String stateString = (pinState == HIGH) ? "true" : "false";
+          value = stateString;
+        }
+        else if (dataType == "Analog")
+        {
+          String valuePart1 = dataValue.substring(0, dataValue.indexOf(','));
+          String valuePart2 = dataValue.substring(dataValue.indexOf(',') + 1);
+
+          int xValue = valuePart1.toInt();
+          int yValue = valuePart2.toInt();
+
+          stepValue = float (yValue - xValue) / 4095;
+          //          int readAnalog = analogRead(PIN_ANALOG);
+          float readAnalog = 1000;
+          Percentage = (readAnalog / 4095) * 100;
+          SensorValue = readAnalog * stepValue + float(xValue) ;
+          value = SensorValue;
+        } else {
+          value = dataValue;
+        }
+        if (hasData)
+        {
+          data_wifi += ",";
+        }
+
+        data_wifi += "\"" + key + "\":\"" + value + "\"";
+
+        hasData = true;
+      }
+    }
+  }
+  String temp_hum_str;
+  if (RS485_OPTIONS == "Temp/Hum" || RS485_OPTIONS == "PH") {
+    temp_hum_str = "\"" + String(TempInput) + "\":\"" + String(float(Temp) / 10.0, 2) + "\","
+                          + "\"" + String(HumInput) + "\":\"" + String(float(Hum) / 10.0, 2) + "\"";
+  } else {
+    temp_hum_str = "\"" + String(customInput3) + "\":\"" + String(float(Temp) / 10.0, 2) + "\","
+                          + "\"" + String(customInput1) + "\":\"" + String(float(Hum) / 10.0, 2) + "\"";
+  }
+  String Data_wifi = "{" + temp_hum_str;
+  if (hasData)
+  {
+    Data_wifi += "," + data_wifi;
+  }
+  Data_wifi += "}";
+  int str_len = Data_wifi.length() + 1;
+  char Data[str_len];
+  Data_wifi.toCharArray(Data, str_len);
+  Serial.println((char *)Data);
+  sprintf(Data, "%s", Data_wifi.c_str());
+  client.publish("v1/devices/me/telemetry", Data);
+  Serial.println("Data sent to ThingsBoard: " + Data_wifi);
+  
+}
+
+// void sendToThingsBoard(String payload) {
+//   char attributes[100];
+//   payload.toCharArray(attributes, 100);
+//   PubSubClient client(espClient);
+//   client.publish("v1/devices/me/telemetry", attributes);
+//   Serial.println("Data sent to ThingsBoard: " + payload);
+// }
+
+void uplink_4G()
+{
+  int health = 99;
+  boolean state = true;
+  String temp_str, hum_str;
+  if (Temp == 0)
+  {
+    temp_str = "***";
+    hum_str = "***";
+  }
+  else
+  {
+    temp_str = String(temperature_float, 1);
+    hum_str = String(humidity_float, 1);
+  }
+  data_4G = "";
+  bool hasData = false;
+  for (int i = 0; i < 15; i++)
+  {
+    int address = 198 + i * 30;
+    String key = readFromEEPROM(address);
+
+    if (key.length() > 0)
+    {
+      String dataType = readFromEEPROM(address + 10);
+      String dataValue = readFromEEPROM(address + 20);
+
+      if (dataType == "Digital" || dataType == "Analog" || dataType == "Customize")
+      {
+        String value = "";
+        if (dataType == "Digital")
+        {
+          int pinNumber = readFromEEPROM(address + 20).toInt();
+          pinMode(pinNumber, INPUT);
+          int pinState = digitalRead(pinNumber);
+          String stateString = (pinState == HIGH) ? "true" : "false";
+          value = stateString;
+        }
+        else if (dataType == "Analog")
+        {
+          String valuePart1 = dataValue.substring(0, dataValue.indexOf(','));
+          String valuePart2 = dataValue.substring(dataValue.indexOf(',') + 1);
+
+          int xValue = valuePart1.toInt();
+          int yValue = valuePart2.toInt();
+
+          stepValue = float (yValue - xValue) / 4095;
+          //          int readAnalog = analogRead(PIN_ANALOG);
+          float readAnalog = 1000;
+          Percentage = (readAnalog / 4095) * 100;
+          SensorValue = readAnalog * stepValue + float(xValue) ;
+          value = SensorValue;
+        } else {
+          value = dataValue;
+        }
+        if (hasData)
+        {
+          data_4G += ",";
+        }
+
+        data_4G += "\"" + key + "\":\"" + value + "\"";
+
+        hasData = true;
+      }
+    }
+  }
+  String temp_hum_str;
+  if (RS485_OPTIONS == "Temp/Hum" || RS485_OPTIONS == "PH") {
+    temp_hum_str = "\"" + String(TempInput) + "\":\"" + String(float(Temp) / 10.0, 2) + "\","
+                          + "\"" + String(HumInput) + "\":\"" + String(float(Hum) / 10.0, 2) + "\"";
+  } else {
+    temp_hum_str = "\"" + String(customInput3) + "\":\"" + String(float(Temp) / 10.0, 2) + "\","
+                          + "\"" + String(customInput1) + "\":\"" + String(float(Hum) / 10.0, 2) + "\"";
+  }
+
+  String Data_4G = "{" + temp_hum_str;
+  if (hasData)
+  {
+    Data_4G += "," + data_4G;
+  }
+  Data_4G += "}";
+
+  int str_len = Data_4G.length() + 1;
+  char Data[str_len];
+  Data_4G.toCharArray(Data, str_len);
+  Serial.println((char *)Data);
+  sprintf(Data, "%s", Data_4G.c_str());
+  MQTT_publish(Data);
+  counter++;
 }
 void uplink_lorawan()
 {
@@ -109,7 +297,7 @@ void uplink_lorawan()
 
   for (int i = 0; i < 15; i++)
   {
-    int address = 240 + i * 30;
+    int address = 198 + i * 30;
     String key = readFromEEPROM(address);
 
     if (key.length() > 0)

@@ -9,6 +9,7 @@ void handleProcess() {
   String value8 = server.arg("value8");
   String value9 = server.arg("value9");
   String value10 = server.arg("value10");
+  value10.replace(" ", "");  // This will replace spaces with an empty string
   String value11 = server.arg("value11");
   String value12 = server.arg("value12");
   String value13 = server.arg("value13");
@@ -33,8 +34,12 @@ void handleProcess() {
 
   modeSelect = server.arg("modeSelect");
   modeLoraSelect = server.arg("modeLoraSelect");
+  index4G = server.arg("index4G");
+  value4G = server.arg("value4G");
 
-  Class = server.arg("classSelect");
+  ClassOTAA = server.arg("classSelectOTAA");
+  ClassABP = server.arg("classSelectABP");
+
   RS485_OPTIONS = server.arg("rs485Options");
   String data1 = server.arg("dataType1");
   String data2 = server.arg("dataType2");
@@ -46,45 +51,50 @@ void handleProcess() {
   dataSent = true;
 
   saveToEEPROM(0, value1);
-  saveToEEPROM(20, value2);
-  saveToEEPROM(40, value3);
-  saveToEEPROM(76, value4);
-  saveToEEPROM(86, value5);
-  saveToEEPROM(106, value6);
-  saveToEEPROM(146, value7);
-  saveToEEPROM(182, value8);
-  saveToEEPROM(190, value9);
-  saveToEEPROM(200, value10);
-  saveToEEPROM(220, value11);
-  saveToEEPROM(240, value12);
-  saveToEEPROM(260, value13);
-  saveToEEPROM(270, value14);
-  saveToEEPROM(290, value15);
-  saveToEEPROM(300, value16);
-  saveToEEPROM(320, value17);
-  saveToEEPROM(330, value18);
-  saveToEEPROM(350, value19);
-  saveToEEPROM(360, value20);
-  saveToEEPROM(380, value21);
-  saveToEEPROM(475, value22);
-  saveToEEPROM(490, value23);
+  saveToEEPROM(18, value2);
+  saveToEEPROM(36, value3);
+  saveToEEPROM(72, value4);
+  saveToEEPROM(76, value5);
+  saveToEEPROM(94, value6);
+  saveToEEPROM(110, value7);
+  saveToEEPROM(146, value8);
+  saveToEEPROM(150, value9);
+  saveToEEPROM(158, value10);
+  saveToEEPROM(178, value11);
+  saveToEEPROM(198, value12);
+  saveToEEPROM(218, value13);
+  saveToEEPROM(228, value14);
+  saveToEEPROM(248, value15);
+  saveToEEPROM(258, value16);
+  saveToEEPROM(278, value17);
+  saveToEEPROM(288, value18);
+  saveToEEPROM(308, value19);
+  saveToEEPROM(318, value20);
+  saveToEEPROM(338, value21);
+  saveToEEPROM(435, value22);
+  saveToEEPROM(455, value23);
   // saveToEEPROM(580, value24);
-  saveToEEPROM(390, TempInput);
-  saveToEEPROM(400, HumInput);
-  saveToEEPROM(410, customInput1);
-  saveToEEPROM(420, customInput2);
-  saveToEEPROM(430, customInput3);
-  saveToEEPROM(440, customInput4);
+  saveToEEPROM(348, TempInput);
+  saveToEEPROM(358, HumInput);
+  saveToEEPROM(368, customInput1);
+  saveToEEPROM(378, customInput2);
+  saveToEEPROM(388, customInput3);
+  saveToEEPROM(398, customInput4);
   
-  saveToEEPROM(250, data1);
-  saveToEEPROM(280, data2);
-  saveToEEPROM(310, data3);
-  saveToEEPROM(340, data4);
-  saveToEEPROM(370, data5);
-  saveToEEPROM(450, modeSelect);
-  saveToEEPROM(460, RS485_OPTIONS);
-  saveToEEPROM(470, Class);
-  saveToEEPROM(507, modeLoraSelect);
+  saveToEEPROM(208, data1);
+  saveToEEPROM(238, data2);
+  saveToEEPROM(268, data3);
+  saveToEEPROM(298, data4);
+  saveToEEPROM(328, data5);
+  saveToEEPROM(408, modeSelect);
+  saveToEEPROM(418, RS485_OPTIONS);
+  saveToEEPROM(428, ClassOTAA);
+  saveToEEPROM(431, ClassABP);
+  saveToEEPROM(475, modeLoraSelect);
+  saveToEEPROM(480, index4G);
+  saveToEEPROM(495, value4G);
+
+
 
 
   Serial.println("Data saved to EEPROM successfully.");
