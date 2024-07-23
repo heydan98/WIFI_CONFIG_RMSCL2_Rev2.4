@@ -53,3 +53,6 @@ The system is highly configurable through EEPROM storage. Key configuration opti
 1. Configure the system by writing appropriate values to EEPROM.
 2. Upload the code to your ESP32 board.
 3. The system will start automatically, reading sensor data and transmitting it according to the configured settings.
+
+## Demo
+https://youtu.be/7eBcbOoZ9rg
